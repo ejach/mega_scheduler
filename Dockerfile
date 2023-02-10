@@ -3,6 +3,7 @@ FROM python:3.8-slim
 # set the working directory in the container
 WORKDIR /
 
+RUN apk update
 RUN apk add make automake gcc g++ subversion python3-dev
 
 # install dependencies / make sure time zone is correct
