@@ -1,15 +1,12 @@
-FROM python:3.8-slim
+FROM arm64v8/python:3.8-alpine
 
 # set the working directory in the container
 WORKDIR /
 
-RUN apk update
-RUN apk add make automake gcc g++ subversion python3-dev
-
 # install dependencies / make sure time zone is correct
 RUN ln -sf /usr/share/zoneinfo/America/New_York /etc/timezone && \
     ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime && \
-    pip install mega.py && pip install schedule
+    pip3 install mega.py && pip3 install schedule
 
 # copy the content of the local directory to the working directory
 COPY main.py /
