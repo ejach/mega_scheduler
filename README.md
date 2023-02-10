@@ -1,4 +1,5 @@
 # mega_scheduler
+Backup a file or directory to mega.nz every day at a specific time. 
 ### Environment
 ```bash
 EMAIL=xxx
