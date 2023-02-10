@@ -1,17 +1,18 @@
-# megaUploadScheduler
+# mega_scheduler
+Backup a file or directory to mega.nz every day at a specific time. 
 ### Environment
 ```bash
 EMAIL=xxx
 PASSWORD=xxx
-TARGET_DIR=/mnt/hdd
+TARGET_DIR=/path/to/dir
 BACKUP_TIME=04:00
 ```
 
 ### docker-compose.yml
 ```yaml
-  mega_upload:
-    image: ejach/mega_upload:latest
-    container_name: mega_upload
+  mega_scheduler:
+    image: ghcr.io/ejach/mega_scheduler:latest
+    container_name: mega_scheduler
     environment:
       - EMAIL=${EMAIL}
       - PASSWORD=${PASSWORD}
