@@ -2,7 +2,6 @@
 from datetime import datetime
 from logging import INFO, info, error, basicConfig
 from os import walk, path, getenv, remove, chdir, getcwd
-from math import floor, log
 from sys import stdout
 from tarfile import open
 from time import sleep
@@ -25,36 +24,32 @@ def ball_dir(targ_dir, filename):
 
 
 # Upload the tarball at specified time
-def upload():
+def upload(mega_obj, target_dir):
     now = datetime.now()
     date_time = now.strftime('%m-%d-%Y_%H:%M')
 
     info(f'******* Log info for {date_time} *******')
 
     file_name = f'backup-{date_time}.tar.gz'
-
+    # Compress the file in the target directory
     ball_dir(target_dir, file_name)
-    
     file_size = path.getsize('%s/%s' % (getcwd(), file_name))
-
     storage_space = m.get_storage_space()
-
     used_space = storage_space['used']
-
     total_space = storage_space['total'] - used_space
 
     info('Starting upload to mega.nz')
 
     try:
         if file_size < total_space:
-            m.upload(file_name)
+            mega_obj.upload(file_name)
         else:
-            # Throw Quota error, catch it and wait until the next day and try again
+            # Throw QuotaError, catch it and wait until the next day and try again
             raise RequestError(-17)
     except RequestError:
         error('File cannot be uploaded, quota needs to be freed up.')
 
-    file_found = m.find(file_name, exclude_deleted=True)
+    file_found = mega_obj.find(file_name, exclude_deleted=True)
 
     if file_found:
         if path.exists(file_name):
@@ -79,7 +74,7 @@ chdir('..')
 info('Current working directory is ' + getcwd())
 
 # Run upload at the specified BACKUP_TIME
-every().day.at(getenv('BACKUP_TIME')).do(upload)
+every().day.at(getenv('BACKUP_TIME')).do(upload(m, target_dir))
 
 # Run the pending tasks every 1s
 while True:
