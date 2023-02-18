@@ -2,11 +2,13 @@
 from datetime import datetime
 from logging import INFO, info, error, basicConfig
 from os import walk, path, getenv, remove, chdir, getcwd
+from math import floor, log
 from sys import stdout
 from tarfile import open
 from time import sleep
 
 from mega import Mega
+from mega.errors import RequestError
 from schedule import every, run_pending
 
 # Setup logger
@@ -32,10 +34,25 @@ def upload():
     file_name = f'backup-{date_time}.tar.gz'
 
     ball_dir(target_dir, file_name)
+    
+    file_size = path.getsize('%s/%s' % (getcwd(), file_name))
+
+    storage_space = m.get_storage_space()
+
+    used_space = storage_space['used']
+
+    total_space = storage_space['total'] - used_space
 
     info('Starting upload to mega.nz')
 
-    m.upload(file_name)
+    try:
+        if file_size < total_space:
+            m.upload(file_name)
+        else:
+            # Throw Quota error, catch it and wait until the next day and try again
+            raise RequestError(-17)
+    except RequestError:
+        error('File cannot be uploaded, quota needs to be freed up.')
 
     file_found = m.find(file_name, exclude_deleted=True)
 
