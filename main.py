@@ -9,13 +9,8 @@ from time import sleep
 from mega import Mega
 from schedule import every, run_pending
 
-
-# Setup logger and global variables
+# Setup logger
 basicConfig(stream=stdout, level=INFO)
-
-now = datetime.now()
-DATE_TIME = now.strftime('%m-%d-%Y_%H:%M')
-FILE_NAME = f'backup-{DATE_TIME}.tar.gz'
 
 
 # Create tar.gz file in target directory
@@ -27,35 +22,32 @@ def ball_dir(targ_dir, filename):
                 tar_handle.add(path.join(root, f))
 
 
-# Compress the files, return if the file can be uploaded
-def can_upload():
-    info(f'******* Log info for {DATE_TIME} *******')
-
-    # Compress the files in the target directory
-    ball_dir(target_dir, FILE_NAME)
-
-    # Calculate if the tarball can be uploaded
-    file_size = path.getsize('%s/%s' % (getcwd(), FILE_NAME))
-    storage_space = m.get_storage_space()
-    used_space = storage_space['used']
-    total_space = storage_space['total'] - used_space
-    return file_size < total_space
-
 # Upload the tarball at specified time
-def upload(m, file_name):
+def upload():
+    now = datetime.now()
+    date_time = now.strftime('%m-%d-%Y_%H:%M')
+
+    info(f'******* Log info for {date_time} *******')
+
+    file_name = f'backup-{date_time}.tar.gz'
+
+    ball_dir(target_dir, file_name)
+
     info('Starting upload to mega.nz')
+
     m.upload(file_name)
 
     file_found = m.find(file_name, exclude_deleted=True)
 
     if file_found:
         if path.exists(file_name):
-            info(f'Upload completed for {DATE_TIME}. Deleting file')
+            info(f'Upload completed for {date_time}. Deleting file')
             remove(file_name)
         else:
             error('File not found.')
     else:
         error('File not uploaded, please try again.')
+
 
 # Create the Mega object and log in using env variables
 info('Logging in')
@@ -70,14 +62,9 @@ chdir('..')
 info('Current working directory is ' + getcwd())
 
 # Run upload at the specified BACKUP_TIME
-every().day.at(getenv('BACKUP_TIME')).do(upload(m, FILE_NAME))
+every().day.at(getenv('BACKUP_TIME')).do(upload)
 
-# Run the pending tasks every 1s, making sure that there is enough space
+# Run the pending tasks every 1s
 while True:
-    if can_upload():
-        run_pending()
-        sleep(1)
-    else:
-        # Wait an hour, then check if there is enough space
-        sleep(3600)
-        continue
+    run_pending()
+    sleep(1)
