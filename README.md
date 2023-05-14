@@ -18,6 +18,7 @@ BACKUP_TIME=04:00
       - PASSWORD=${PASSWORD}
       - TARGET_DIR=${TARGET_DIR}
       - BACKUP_TIME=${BACKUP_TIME}
+      - DAY_RETENTION=${DAY_RETENTION}
     volumes:
       - ${TARGET_DIR}:/${TARGET_DIR}
     restart: unless-stopped

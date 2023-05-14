@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from datetime import datetime
+from datetime import datetime, timedelta
 from logging import INFO, info, error, basicConfig
 from os import walk, path, getenv, remove, chdir, getcwd
 from sys import stdout
@@ -13,35 +13,50 @@ from schedule import every, run_pending
 basicConfig(stream=stdout, level=INFO)
 
 
+# Create the Mega object and log in using env variables
+info('Logging in')
+mega = Mega()
+email, password, target_dir = getenv('EMAIL'), getenv('PASSWORD'), getenv('TARGET_DIR')
+m = mega.login(email, password)
+files = m.get_files()
+
+
+# Change the working directory to the TARGET_DIR, and then go up a level so the tarball is not put in the TARGET_DIR
+info('Logged in. Changing current working directory.')
+chdir(target_dir)
+chdir('..')
+info('Current working directory is %s' % getcwd())
+
 # Create tar.gz file in target directory
 def ball_dir(targ_dir, filename):
     with open(filename, 'w:gz') as tar_handle:
-        for root, dirs, files in walk(targ_dir):
+        for root, _, files in walk(targ_dir):
             for f in files:
                 info(path.join(root, f) + ' added')
                 tar_handle.add(path.join(root, f))
 
 
 # Upload the tarball at specified time
-def upload():
+def upload(mega_obj, targ_dir, files):
+    day_retention(mega_obj, int(getenv('DAY_RETENTION')), files)
     now = datetime.now()
-    date_time = now.strftime('%m-%d-%Y_%H:%M')
+    date_time = now.strftime('%m-%d-%Y')
 
-    info(f'******* Log info for {date_time} *******')
+    info('******* Log info for %s *******' % date_time)
 
-    file_name = f'backup-{date_time}.tar.gz'
+    file_name = 'backup-%s.tar.gz' % date_time
 
-    ball_dir(target_dir, file_name)
+    ball_dir(targ_dir, file_name)
 
     info('Starting upload to mega.nz')
 
-    m.upload(file_name)
+    mega_obj.upload(file_name)
 
-    file_found = m.find(file_name, exclude_deleted=True)
+    file_found = mega_obj.find(file_name, exclude_deleted=True)
 
     if file_found:
         if path.exists(file_name):
-            info(f'Upload completed for {date_time}. Deleting file')
+            info('Upload completed for %s. Deleting file' % date_time)
             remove(file_name)
         else:
             error('File not found.')
@@ -49,20 +64,22 @@ def upload():
         error('File not uploaded, please try again.')
 
 
-# Create the Mega object and log in using env variables
-info('Logging in')
-mega = Mega()
-email, password, target_dir = getenv('EMAIL'), getenv('PASSWORD'), getenv('TARGET_DIR')
-m = mega.login(email, password)
-
-# Change the working directory to the TARGET_DIR, and then go up a level so the tarball is not put in the TARGET_DIR
-info('Logged in. Changing current working directory.')
-chdir(target_dir)
-chdir('..')
-info('Current working directory is ' + getcwd())
+# Create an array of the past n days and delete files that aren't inside of it, then empty the Rubbish Bin
+def day_retention(mega_obj, num, files):
+    info('******* Deleting backups not from the last %s days *******' % num)
+    date_arr = []
+    for x in range(num):
+      d = datetime.now() - timedelta(days=x)
+      date_arr.append(d.strftime('%m-%d-%Y'))
+    for y in files:
+        if files[y]['a']['n'] not in ('Rubbish Bin', 'Cloud Drive', 'Inbox'):
+            file = files[y]['a']['n'].strip('.tar.gz').strip('backup-')
+            if file not in date_arr:
+                mega_obj.delete(files[y]['h'])
+    mega_obj.empty_trash()
 
 # Run upload at the specified BACKUP_TIME
-every().day.at(getenv('BACKUP_TIME')).do(upload)
+every().day.at(getenv('BACKUP_TIME')).do(upload, m, target_dir, files)
 
 # Run the pending tasks every 1s
 while True:
