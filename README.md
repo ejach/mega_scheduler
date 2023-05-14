@@ -6,6 +6,7 @@ EMAIL=xxx
 PASSWORD=xxx
 TARGET_DIR=/path/to/dir
 BACKUP_TIME=04:00
+DAY_RETENTION=7
 ```
 
 ### docker-compose.yml
