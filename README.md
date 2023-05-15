@@ -1,4 +1,7 @@
-# mega_scheduler
+# mega_scheduler 
+[![Docker](https://github.com/ejach/mega_scheduler/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/ejach/mega_scheduler/pkgs/container/mega_scheduler)
+
+
 Backup a file or directory to mega.nz every day at a specific time. 
 ### Environment
 ```bash
