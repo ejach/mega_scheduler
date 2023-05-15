@@ -72,11 +72,17 @@ def day_retention(mega_obj, num, files):
       d = datetime.now() - timedelta(days=x)
       date_arr.append(d.strftime('%m-%d-%Y'))
     for y in files:
-        if files[y]['a']['n'] not in ('Rubbish Bin', 'Cloud Drive', 'Inbox'):
-            file = files[y]['a']['n'].strip('.tar.gz').strip('backup-')
+        filename = files[y]['a']['n']
+        if filename not in ('Rubbish Bin', 'Cloud Drive', 'Inbox') and 'backup-' in filename:
+            file = filename.strip('.tar.gz').strip('backup-')
             if file not in date_arr:
                 mega_obj.delete(files[y]['h'])
+                info('Deleted %s' % filename)
+    info('Day retention cleanup complete')
     mega_obj.empty_trash()
+
+day_retention(m, int(getenv('DAY_RETENTION')), files)
+
 
 # Run upload at the specified BACKUP_TIME
 every().day.at(getenv('BACKUP_TIME')).do(upload, m, target_dir, files)
