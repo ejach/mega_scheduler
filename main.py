@@ -81,8 +81,6 @@ def day_retention(mega_obj, num, files):
     info('Day retention cleanup complete')
     mega_obj.empty_trash()
 
-day_retention(m, int(getenv('DAY_RETENTION')), files)
-
 
 # Run upload at the specified BACKUP_TIME
 every().day.at(getenv('BACKUP_TIME')).do(upload, m, target_dir, files)
