@@ -13,26 +13,12 @@ from schedule import every, run_pending
 basicConfig(stream=stdout, level=INFO)
 
 
-# Create the Mega object and log in using env variables
-info('Logging in')
-mega = Mega()
-email, password, target_dir = getenv('EMAIL'), getenv('PASSWORD'), getenv('TARGET_DIR')
-m = mega.login(email, password)
-files = m.get_files()
-
-
-# Change the working directory to the TARGET_DIR, and then go up a level so the tarball is not put in the TARGET_DIR
-info('Logged in. Changing current working directory.')
-chdir(target_dir)
-chdir('..')
-info('Current working directory is %s' % getcwd())
-
 # Create tar.gz file in target directory
 def ball_dir(targ_dir, filename):
     with open(filename, 'w:gz') as tar_handle:
         for root, _, files in walk(targ_dir):
             for f in files:
-                info(path.join(root, f) + ' added')
+                info('%s added' % path.join(root, f))
                 tar_handle.add(path.join(root, f))
 
 
@@ -41,19 +27,13 @@ def upload(mega_obj, targ_dir, files):
     day_retention(mega_obj, int(getenv('DAY_RETENTION')), files)
     now = datetime.now()
     date_time = now.strftime('%m-%d-%Y')
-
     info('******* Log info for %s *******' % date_time)
-
     file_name = 'backup-%s.tar.gz' % date_time
-
     ball_dir(targ_dir, file_name)
-
     info('Starting upload to mega.nz')
 
     mega_obj.upload(file_name)
-
     file_found = mega_obj.find(file_name, exclude_deleted=True)
-
     if file_found:
         if path.exists(file_name):
             info('Upload completed for %s. Deleting file' % date_time)
@@ -80,6 +60,21 @@ def day_retention(mega_obj, num, files):
                 info('Deleted %s' % filename)
     info('Day retention cleanup complete')
     mega_obj.empty_trash()
+
+
+# Create the Mega object and log in using env variables
+info('Logging in')
+mega = Mega()
+email, password, target_dir = getenv('EMAIL'), getenv('PASSWORD'), getenv('TARGET_DIR')
+m = mega.login(email, password)
+files = m.get_files()
+
+
+# Change the working directory to the TARGET_DIR, and then go up a level so the tarball is not put in the TARGET_DIR
+info('Logged in. Changing current working directory.')
+chdir(target_dir)
+chdir('..')
+info('Current working directory is %s' % getcwd())
 
 
 # Run upload at the specified BACKUP_TIME
