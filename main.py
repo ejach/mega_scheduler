@@ -77,7 +77,7 @@ if __name__ == '__main__':
     chdir('..')
     info('Current working directory is %s' % getcwd())
 
-    if bool(getenv('SCRIPT_MODE', False)):
+    if not bool(getenv('SCRIPT_MODE', False)):
         # Run upload at the specified BACKUP_TIME
         every().day.at(getenv('BACKUP_TIME')).do(upload, m, target_dir, files)
 
