@@ -10,6 +10,7 @@ PASSWORD=xxx
 TARGET_DIR=/path/to/dir
 BACKUP_TIME=04:00
 DAY_RETENTION=7
+SCRIPT_MODE=True or False
 ```
 
 ### docker-compose.yml
@@ -23,6 +24,7 @@ DAY_RETENTION=7
       - TARGET_DIR=${TARGET_DIR}
       - BACKUP_TIME=${BACKUP_TIME}
       - DAY_RETENTION=${DAY_RETENTION}
+      - SCRIPT_MODE=${True or False}
     volumes:
       - ${TARGET_DIR}:/${TARGET_DIR}
     restart: unless-stopped

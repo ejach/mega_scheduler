@@ -62,25 +62,28 @@ def day_retention(mega_obj, num, files):
     mega_obj.empty_trash()
 
 
-# Create the Mega object and log in using env variables
-info('Logging in')
-mega = Mega()
-email, password, target_dir = getenv('EMAIL'), getenv('PASSWORD'), getenv('TARGET_DIR')
-m = mega.login(email, password)
-files = m.get_files()
+if __name__ == '__main__':
+    # Create the Mega object and log in using env variables
+    info('Logging in')
+    mega = Mega()
+    email, password, target_dir = getenv('EMAIL'), getenv('PASSWORD'), getenv('TARGET_DIR')
+    m = mega.login(email, password)
+    files = m.get_files()
 
 
-# Change the working directory to the TARGET_DIR, and then go up a level so the tarball is not put in the TARGET_DIR
-info('Logged in. Changing current working directory.')
-chdir(target_dir)
-chdir('..')
-info('Current working directory is %s' % getcwd())
+    # Change the working directory to the TARGET_DIR, and then go up a level so the tarball is not put in the TARGET_DIR
+    info('Logged in. Changing current working directory.')
+    chdir(target_dir)
+    chdir('..')
+    info('Current working directory is %s' % getcwd())
 
+    if bool(getenv('SCRIPT_MODE'), False):
+        # Run upload at the specified BACKUP_TIME
+        every().day.at(getenv('BACKUP_TIME')).do(upload, m, target_dir, files)
 
-# Run upload at the specified BACKUP_TIME
-every().day.at(getenv('BACKUP_TIME')).do(upload, m, target_dir, files)
-
-# Run the pending tasks every 1s
-while True:
-    run_pending()
-    sleep(1)
+        # Run the pending tasks every 1s
+        while True:
+            run_pending()
+            sleep(1)
+    else:
+        upload(m, target_dir, files)
