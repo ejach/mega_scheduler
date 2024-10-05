@@ -6,7 +6,7 @@ WORKDIR /
 COPY requirements.txt /
 
 # install dependencies
-RUN pip install -r requirements.txt
+RUN pip install mega.py && pip install schedule
 
 # copy the content of the local directory to the working directory
 COPY main.py /
