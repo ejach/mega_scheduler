@@ -3,8 +3,6 @@ FROM python:3.8-alpine
 # set the working directory in the container
 WORKDIR /
 
-COPY requirements.txt /
-
 # install dependencies
 RUN pip install mega.py && pip install schedule
 
