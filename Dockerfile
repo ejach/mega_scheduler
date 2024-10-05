@@ -3,6 +3,8 @@ FROM python:3.8-alpine
 # set the working directory in the container
 WORKDIR /
 
+COPY requirements.txt .
+
 # install dependencies / make sure time zone is correct
 RUN ln -sf /usr/share/zoneinfo/America/New_York /etc/timezone && \
     ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime && \
