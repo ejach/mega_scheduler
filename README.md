@@ -10,7 +10,7 @@ PASSWORD=xxx
 TARGET_DIR=/path/to/dir
 BACKUP_TIME=04:00
 DAY_RETENTION=7
-SCRIPT_MODE=True or False
+SCRIPT_MODE=True or False # Default is False
 ```
 
 ### docker-compose.yml
