@@ -1,2 +1,0 @@
-mega.py~=1.0.8
-schedule~=1.2.2
